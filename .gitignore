@@ -1,0 +1,13 @@
+# Distribution
+dist
+out
+build
+node_modules
+
+# Logs
+*.log*
+logs
+
+# Environment
+*.env*
+.mnemonic

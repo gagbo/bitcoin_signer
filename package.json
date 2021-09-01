@@ -1,0 +1,31 @@
+{
+  "name": "bitcoin_signer",
+  "version": "0.0.1",
+  "description": "[Internal development use] INSECURE CLI BTC transaction signer for integration tests",
+  "repository": "https://github.com/gagbo/bitcoin_signer",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "bin": "./dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.7.10",
+    "@types/yargs": "^17.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.30.0",
+    "@typescript-eslint/parser": "^4.30.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.3.2",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "bip32": "^2.0.6",
+    "bip39": "^3.0.4",
+    "bitcoinjs-lib": "^5.2.0",
+    "yargs": "^17.1.1"
+  }
+}
