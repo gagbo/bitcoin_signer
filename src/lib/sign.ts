@@ -13,10 +13,9 @@ export function signTxWithKeyPairs(tx: Transaction, keyPairs: ECPairInterface[])
             try {
                 txb.sign(i, keyPairs[j]);
                 break;
-            } catch (e) {
+            } catch (_e) {
                 if (j == keyChainSize - 1) {
-                    console.error(`All ${keyChainSize} keys in the keychain have been tested`);
-                    throw e;
+                    throw `All ${keyChainSize} keys in the keychain have been tested and none can sign this tx's input ${i}`;
                 }
             }
         }
