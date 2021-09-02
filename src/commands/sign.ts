@@ -1,5 +1,5 @@
 import type { Arguments, CommandBuilder } from 'yargs';
-import { getSeed } from '../lib/import-mnemonic';
+import { seedFromMnemonic } from '../lib/seeds';
 import { signTxWithKeyPairs, generateKeychain } from '../lib/sign';
 import { Transaction } from 'bitcoinjs-lib';
 import * as fs from 'fs';
@@ -22,7 +22,7 @@ export const handler = (argv: Arguments<Options>): void => {
   const { path, tx } = argv;
   process.stdout.write(`Args are\n\tPath: ${path}\n\tTx: ${tx}\n`);
   const seedStr = fs.readFileSync(path, 'utf8');
-  const seed = getSeed(seedStr);
+  const seed = seedFromMnemonic(seedStr, bitcoin.networks.testnet);
   const txStr = fs.readFileSync(tx, 'utf8');
   const parsed = Transaction.fromHex(txStr);
   process.stdout.write(`${parsed.toHex()}\n`);

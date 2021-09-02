@@ -49,16 +49,19 @@ code to be able to keep working.
 
 ### Targeted minimal features
 
-- Better Quickstart in 1 line
-- Better packaging of the executable in one command
-- Import a BIP39 mnemonic as the wallet
-- Read transaction from hex string on path
-- Return the signature for a transaction
+- [ ] Better Quickstart in 1 line
+- [ ] Better packaging of the executable in one command
+- [x] Import a BIP39 mnemonic as the wallet
+- [x] Read transaction from hex string on path
+- [ ] Return the signature for a transaction
 
 ### Other features
 
-- Import a single xpub
-- Import a single address
-- Show addresses to receive funds if necessary
-- Add network as argument (and a .ts file that adds all common networks as dict outside of mainnet/regtest/testnet)
-- Add path as argument, with a default that depends on network
+- [x] Import a single xpub
+      Use the xpub seed, and then just use it a root in the keychain
+- [ ] Import a single address
+- [ ] Show addresses to receive funds if necessary
+- [ ] Add network as argument
+      (and a .ts file that adds all common networks
+      as dict outside of mainnet/regtest/testnet)
+- [ ] Add path as argument, with a default that depends on network
