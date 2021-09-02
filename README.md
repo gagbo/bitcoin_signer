@@ -41,6 +41,9 @@ This tool is being created to help with Ledger testing, so the TransactionBuilde
 format is way easier to use with the rawTransaction format lib-ledger-core
 uses for communication.
 
+That also means that this project uses deprecated code and will keep using old
+code to be able to keep working.
+
 
 ## Half a roadmap
 

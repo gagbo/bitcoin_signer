@@ -27,7 +27,17 @@ export const handler = (argv: Arguments<Options>): void => {
   const parsed = Transaction.fromHex(txStr);
   process.stdout.write(`${parsed.toHex()}\n`);
 
-  const keyChain = generateKeychain(seed, ["m/49'/1'/0'/0/0"], bitcoin.networks.testnet);
+  const keyChain = generateKeychain(
+    seed,
+    ["m/49'/1'/0'/0/0",
+     "m/49'/1'/1'/0/0",
+     "m/49'/1'/1'/1/0",
+     "m/49'/1'/1'/0/1",
+     "m/49'/1'/1'/1/1",
+     "m/49'/1'/1'/0/2",
+     "m/49'/1'/1'/1/2",
+     "m/49'/1'/2'/0/0"],
+    bitcoin.networks.testnet);
   const signedTx = signTxWithKeyPairs(parsed, keyChain);
   console.log(signedTx.toHex());
 
