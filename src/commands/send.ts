@@ -35,20 +35,32 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
     await wd.init_account(DEFAULT_WALLET_NAME, wallet_root_key);
     await wd.synchronize_account(DEFAULT_WALLET_NAME);
     console.log(await wd.get_operations(DEFAULT_WALLET_NAME));
+    const balance = (await wd.get_account_info(DEFAULT_WALLET_NAME)).balance
+
+    if (balance < (amount).toString()) {
+        throw `Invalid balance ${balance}`
+    }
+
     const tx = await wd.build_transaction(DEFAULT_WALLET_NAME, amount, recipient);
     const signedTx = await signWDTxWithSeed(DEFAULT_WALLET_NAME, tx, wallet_root_key);
-    await wd.broadcast_transaction(
+    const txHash = await wd.broadcast_transaction(
         DEFAULT_WALLET_NAME,
         signedTx.raw_transaction,
         signedTx.signatures,
         signedTx.pubkeys);
     console.log("Displaying operations to confirm the optimistic update worked");
     console.log(await wd.get_operations(DEFAULT_WALLET_NAME));
+    if (!(await wd.is_transaction_on_wallet_daemon(DEFAULT_WALLET_NAME, txHash))) {
+        throw `Transaction ${txHash} does not appear on Wallet daemon just after broadcast`
+    }
     console.log("Mining a few blocks on Praline to have some confirmations");
     console.log(await praline.mine_blocks(20));
     console.log("Displaying operations after synchronization to confirm the tx has been updated");
     await wd.synchronize_account(DEFAULT_WALLET_NAME);
     console.log(await wd.get_operations(DEFAULT_WALLET_NAME));
+    if (!(await wd.is_transaction_on_wallet_daemon(DEFAULT_WALLET_NAME, txHash))) {
+        throw `Transaction ${txHash} does not appear on Wallet daemon after synchronization`
+    }
 
     process.exit(0);
 };

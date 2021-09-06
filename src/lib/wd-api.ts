@@ -93,7 +93,7 @@ export async function build_transaction(wallet_name: string, amount: number, rec
     });
 }
 
-export async function broadcast_transaction(wallet_name: string, raw_tx: string, signatures: string[], pubkeys: string[]): Promise<Transaction> {
+export async function broadcast_transaction(wallet_name: string, raw_tx: string, signatures: string[], pubkeys: string[]): Promise<string> {
     // Broadcast with wallet daemon
     return await post(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0/transactions/sign`, {
         raw_transaction: raw_tx,
