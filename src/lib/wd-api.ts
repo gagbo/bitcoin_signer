@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as AxiosLogger from 'axios-logger';
 import { BIP32Interface } from 'bip32';
 
 export type Transaction =
@@ -19,14 +20,17 @@ const AXIOS_CONFIG = {
         pubkey: '03769E7CA689F30D684E07011163EE328451542D65CC3A4DC918AF64864757E002'
     }
 }
+const wd_client = axios.create();
+wd_client.interceptors.request.use(AxiosLogger.requestLogger, AxiosLogger.errorLogger);
+wd_client.interceptors.response.use(AxiosLogger.responseLogger, AxiosLogger.errorLogger);
 
 async function get(base_url: string, path: string): Promise<any> {
-    let res = await axios.get(`${base_url}${path}`, AXIOS_CONFIG)
+    let res = await wd_client.get(`${base_url}${path}`, AXIOS_CONFIG)
     return res.data
 }
 
 async function post(base_url: string, path: string, body?: any): Promise<any> {
-    let res = await axios.post(`${base_url}${path}`, body || {}, AXIOS_CONFIG)
+    let res = await wd_client.post(`${base_url}${path}`, body || {}, AXIOS_CONFIG)
     return res.data
 }
 
@@ -53,7 +57,6 @@ export async function init_account(wallet_name: string, root_key: BIP32Interface
         currency_name: 'bitcoin_testnet',
     })
     // Create account
-    console.log(root_key.neutered().toBase58())
     await post(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/extended`, {
         "account_index": "0",
         "derivations": [

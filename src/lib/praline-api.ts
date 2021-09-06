@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as AxiosLogger from 'axios-logger';
 import cliProgress from 'cli-progress';
 import { Transaction } from 'bitcoinjs-lib';
 import { Transaction as WDTransaction } from './wd-api';
@@ -10,19 +11,24 @@ type Block = {
 const PRALINE_URL = "http://localhost:28443";
 const EXPLORER_URL = "http://localhost:20000";
 
+const praline_client = axios.create();
+praline_client.interceptors.request.use(AxiosLogger.requestLogger, AxiosLogger.errorLogger);
+praline_client.interceptors.response.use(AxiosLogger.responseLogger, AxiosLogger.errorLogger);
+
 async function get(base_url: string, path: string): Promise<any> {
+    // Not using the custom client to avoid log spams
     let res = await axios.get(`${base_url}${path}`);
     return res.data;
 }
 
 async function post(base_url: string, path: string, body?: any): Promise<any> {
-    let res = await axios.post(`${base_url}${path}`, body);
+    let res = await praline_client.post(`${base_url}${path}`, body);
     return res.data;
 }
 
 async function get_current_block(): Promise<Block> {
     try {
-        return await get(EXPLORER_URL, '/blockchain/v3/btc_testnet/blocks/current');
+        return await get(EXPLORER_URL, "/blockchain/v3/btc_testnet/blocks/current");
     } catch (e) {
         if (e.response && e.response.status == 404) {
             return { height: 0 };

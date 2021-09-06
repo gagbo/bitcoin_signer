@@ -75,6 +75,8 @@ services:
       POSTGRES_PASSWORD: ledger_secret
     volumes:
       - ./tooling/database/postgres/local_init:/docker-entrypoint-initdb.d
+    tmpfs:
+      - /var/lib/postgresql/data
     ports:
       - "5432:5432"
     command: -c "ssl=on" -c "ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key" -c "ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem"
@@ -82,6 +84,7 @@ services:
   wallet-daemon:
     image: ghcr.io/ledgerhq/ledger-wallet-daemon:2.11
     environment:
+      LOG_APPENDER: STDOUT
       CORE_DATABASE_ENGINE: postgres
       CORE_PG_HOST: postgres-server-ssl
       CORE_PG_USER: ledger
