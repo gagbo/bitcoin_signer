@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as AxiosLogger from 'axios-logger';
 import { BIP32Interface } from 'bip32';
+import * as config from './config';
 
 export type Transaction =
     {
@@ -14,10 +15,10 @@ export type Transaction =
         raw_transaction: string
     }
 
-const WALLET_DAEMON_URL = "http://localhost:9200"
+const WALLET_DAEMON_URL = config.wallet_daemon().url;
 const AXIOS_CONFIG = {
     headers: {
-        pubkey: '03769E7CA689F30D684E07011163EE328451542D65CC3A4DC918AF64864757E002'
+        pubkey: config.wallet_daemon().pubkey
     }
 }
 const wd_client = axios.create();

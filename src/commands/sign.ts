@@ -3,7 +3,7 @@ import { seedFromMnemonic } from '../lib/seeds';
 import { signTxWithKeyPairs, generateKeychain } from '../lib/sign';
 import { Transaction } from 'bitcoinjs-lib';
 import * as fs from 'fs';
-import * as bitcoin from 'bitcoinjs-lib';
+import * as config from '../lib/config';
 
 type Options = {
   path: string;
@@ -21,8 +21,9 @@ export const builder: CommandBuilder<Options, Options> = (yargs) =>
 export const handler = (argv: Arguments<Options>): void => {
   const { path, tx } = argv;
   process.stdout.write(`Args are\n\tPath: ${path}\n\tTx: ${tx}\n`);
+  const network = config.network().network;
   const seedStr = fs.readFileSync(path, 'utf8');
-  const seed = seedFromMnemonic(seedStr, bitcoin.networks.testnet);
+  const seed = seedFromMnemonic(seedStr, network);
   const txStr = fs.readFileSync(tx, 'utf8');
   const parsed = Transaction.fromHex(txStr);
   process.stdout.write(`${parsed.toHex()}\n`);
@@ -37,7 +38,7 @@ export const handler = (argv: Arguments<Options>): void => {
      "m/49'/1'/1'/0/2",
      "m/49'/1'/1'/1/2",
      "m/49'/1'/2'/0/0"],
-    bitcoin.networks.testnet);
+    network);
   const signedTx = signTxWithKeyPairs(parsed, keyChain);
   console.log(signedTx.toHex());
 
