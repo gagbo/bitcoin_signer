@@ -9,16 +9,28 @@ not audited (by the author, at least).
 
 # Bitcoin CLI Signing utility
 
-This is mostly a draft for now.
+This is a small library/CLI utility for signing BTC-like transactions using
+bitcoinlib-js. As an extra, it can also use internal Ledger Wallet Daemon and
+Praline mock-node/explorer infrastructure to run broadcasting-based scenarii for
+component testing.
+
+  - [Quickstart](#quickstart)
+  - [Testing with Wallet Daemon / Praline](#testing-with-wallet-daemon-praline)
+  - [Design decisions and limitations](#design-decisions-and-limitations)
+    - [UTXO consolidation](#utxo-consolidation)
+    - [TransactionBuilder vs. PSBT](#transactionbuilder-vs-psbt)
+  - [Half a roadmap](#half-a-roadmap)
+    - [Targeted minimal features](#targeted-minimal-features)
+    - [Other features](#other-features)
 
 ## Quickstart
 
 ```bash
-# Create a mnenomic and saves the string in a file
+ # Create a mnenomic and saves the string in a file
 echo "abandon abandon abandon" > .mnemonic
-# Build the stuff
+ # Build the stuff
 npm run build # Or yarn build
-# Test the stuff
+ # Test the stuff
 node dist/index.js sign .mnemonic .tx-test
 ```
 
@@ -27,6 +39,28 @@ It will fail with messages like
 pubkeyhash not supported (OP_DUP OP_HASH160 ed176f89c975db1fb6c9b798e446fba6023a9b10 OP_EQUALVERIFY OP_CHECKSIG)
 ```
 if the key pair doesn't match one of the input to sign
+
+## Testing with Wallet Daemon / Praline
+
+> *Note*: The [docker-compose file](./docker-compose.yml) uses ghcr images, so
+> configure your docker CLI accordingly. (And unauthorized people won't be able to
+> run this test, even including myself eventually)
+
+There is a testing scenario that uses commands to successively :
+- faucet some BTC on Praline handling a testnet
+- build, sign, and broadcast a transaction using Wallet Daemon, Praline, and
+  Wallet Daemon respectively.
+
+This basic scenario uses the [Faucet](./src/commands/faucet.ts) and
+[Send](./src/commands/send.ts) commands and serves the purpose of dogfooding the
+API in [lib](./src/lib), as well as showing examples for building other
+workflows.
+
+``` bash
+docker-compose up -d
+ # Wait for all containers to start, lasts approx. 1min. You can monitor your CPU load
+./tooling/scenario.sh
+```
 
 ## Design decisions and limitations
 
@@ -53,7 +87,7 @@ code to be able to keep working.
 - [ ] Better packaging of the executable in one command
 - [x] Import a BIP39 mnemonic as the wallet
 - [x] Read transaction from hex string on path
-- [ ] Return the signature for a transaction
+- [x] Return the signature for a transaction
 
 ### Other features
 
