@@ -85,17 +85,29 @@ services:
     image: ghcr.io/ledgerhq/ledger-wallet-daemon:2.11
     environment:
       LOG_APPENDER: STDOUT
+      LOG_LEVEL: DEBUG
+      DAEMON_LOG_LEVEL: INFO
+      SERVICES_LOG_LEVEL: INFO
+      HTTP_SERVER_LOG_LEVEL: INFO
+      CORE_LOG_LEVEL: DEBUG
+      EXPLORER_HTTP_LOG_LEVEL: INFO
+      REDIS_LOG_LEVEL: WARN
+      PG_LOG_LEVEL: WARN
+      DJINNI_LOG_LEVEL: WARN
+      TWITTER_LOG_LEVEL: WARN
       CORE_DATABASE_ENGINE: postgres
       CORE_PG_HOST: postgres-server-ssl
       CORE_PG_USER: ledger
       CORE_PG_PWD: ledger_secret
       CORE_PG_DB_NAME_PREFIX: wd_
+      CORE_PG_CONNECTION_POOL_SIZE_PER_WALLET_POOL: 1
       WALLET_DAEMON_DB_NAME: wallet_daemon
       REDIS_HOST: redis
       REDIS_PORT: 6379
       WALLET_BTC_TESTNET_EXPLORER_ENDPOINT: http://explorer
       WALLET_BTC_TESTNET_EXPLORER_PORT: 20000
       WALLET_BTC_TESTNET_EXPLORER_VERSION: v3
+      WALLET_BTC_TESTNET_EXPLORER_PROXYUSE: "false"
     entrypoint: /app/run.sh -Dscala.concurrent.context.numThreads=x8 -Dscala.concurrent.context.maxThreads=x8
     ports:
       - "9200:9200"

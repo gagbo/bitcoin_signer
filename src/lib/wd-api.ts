@@ -3,16 +3,16 @@ import * as AxiosLogger from 'axios-logger';
 import { BIP32Interface } from 'bip32';
 
 export type Transaction =
-{
-  block?: {height: number},
-  fees: string,
-  hash: string,
-  time: string,
-  inputs: {derivation_paths: string[]}[],
-  lock_time: number,
-  outputs: {}[],
-  raw_transaction: string
-}
+    {
+        block?: { height: number },
+        fees: string,
+        hash: string,
+        time: string,
+        inputs: { derivation_paths: string[] }[],
+        lock_time: number,
+        outputs: {}[],
+        raw_transaction: string
+    }
 
 const WALLET_DAEMON_URL = "http://localhost:9200"
 const AXIOS_CONFIG = {
@@ -21,12 +21,17 @@ const AXIOS_CONFIG = {
     }
 }
 const wd_client = axios.create();
+const wd_nolog_client = axios.create();
 wd_client.interceptors.request.use(AxiosLogger.requestLogger, AxiosLogger.errorLogger);
 wd_client.interceptors.response.use(AxiosLogger.responseLogger, AxiosLogger.errorLogger);
 
-async function get(base_url: string, path: string): Promise<any> {
-    let res = await wd_client.get(`${base_url}${path}`, AXIOS_CONFIG)
-    return res.data
+async function get(base_url: string, path: string, skip_log?: boolean): Promise<any> {
+    if (skip_log) {
+        const res = await wd_nolog_client.get(`${base_url}${path}`, AXIOS_CONFIG);
+        return res.data;
+    }
+    const res = await wd_client.get(`${base_url}${path}`, AXIOS_CONFIG);
+    return res.data;
 }
 
 async function post(base_url: string, path: string, body?: any): Promise<any> {
@@ -42,11 +47,23 @@ export async function synchronize_account(wallet_name: string): Promise<void> {
     return await post(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0/operations/synchronize`)
 }
 
+async function timer(ms: number): Promise<void> {
+    return new Promise(res => setTimeout(res, ms));
+};
+
+export async function wait_for_synchronization(wallet_name: string, cooldown?: number): Promise<void> {
+    let isBusy: boolean = await get(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0/operations/busy`);
+    while (isBusy) {
+        await timer(cooldown || 1000);
+        isBusy = await get(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0/operations/busy`);
+    }
+}
+
 export async function get_account_info(wallet_name: string): Promise<any> {
     return await get(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0`)
 }
 
-export async function init_account(wallet_name: string, root_key: BIP32Interface): Promise<any>{
+export async function init_account(wallet_name: string, root_key: BIP32Interface): Promise<any> {
     // Create pool
     await post(WALLET_DAEMON_URL, '/pools', {
         pool_name: 'local_pool'
@@ -69,8 +86,8 @@ export async function init_account(wallet_name: string, root_key: BIP32Interface
     })
 }
 
-export async function get_operations(wallet_name: string): Promise<any> {
-    return (await get(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0/operations?full_op=1`)).operations
+export async function get_operations(wallet_name: string, log?: boolean): Promise<any> {
+    return (await get(WALLET_DAEMON_URL, `/pools/local_pool/wallets/${wallet_name}/accounts/0/operations?full_op=1`, !log)).operations
 }
 
 export async function is_transaction_on_wallet_daemon(wallet_name: string, tx_hash: string): Promise<boolean> {
