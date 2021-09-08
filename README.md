@@ -29,9 +29,9 @@ component testing.
  # Create a mnenomic and saves the string in a file
 echo "abandon abandon abandon" > .mnemonic
  # Build the stuff
-npm run build # Or yarn build
+npm install && npm run build # Or yarn install && yarn build
  # Test the stuff
-node dist/index.js sign .mnemonic .tx-test
+./dist/index.js sign .mnemonic .tx-test
 ```
 
 It will fail with messages like

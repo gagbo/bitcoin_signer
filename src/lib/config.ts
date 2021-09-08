@@ -1,17 +1,13 @@
 import { Network } from 'bitcoinjs-lib';
 import * as bitcoin from 'bitcoinjs-lib';
+import { PralineConfig } from './praline-api';
+import { WDConfig } from './wd-api';
 
 type NetworkConfiguration = {
     network: Network,
     explorer_id: string,
     chain_id: string
     root_wallet_path: string
-};
-
-type WDConfiguration = {
-    url: string,
-    pubkey: string,
-    wallet_name: string
 };
 
 const network_identifier_map: { [key: string]: NetworkConfiguration } = {
@@ -31,7 +27,16 @@ export function praline_url(): string {
     return process.env.BTC_SIGNER_PRALINE_URL;
 }
 
-export function wallet_daemon() : WDConfiguration {
+export function praline(): PralineConfig {
+    return {
+        url: praline_url(),
+        explorer_url: explorer_url(),
+        explorer_id: network().explorer_id,
+        praline_chain_id: network().chain_id
+    }
+}
+
+export function wallet_daemon(): WDConfig {
     return {
         url: process.env.BTC_SIGNER_WD_URL,
         pubkey: process.env.BTC_SIGNER_WD_PUBKEY,

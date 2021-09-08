@@ -2,8 +2,8 @@ import type { Arguments, CommandBuilder } from 'yargs';
 import { seedFromMnemonic } from '../lib/seeds';
 import { signWDTxWithSeed } from '../lib/sign';
 import * as fs from 'fs';
-import * as wd from '../lib/wd-api';
-import * as praline from '../lib/praline-api';
+import { WdApi } from '../lib/wd-api';
+import { PralineApi } from '../lib/praline-api';
 import * as config from '../lib/config';
 
 const DEFAULT_NETWORK = config.network().network;
@@ -16,8 +16,8 @@ type Options = {
     amount: number;
 };
 
-export const command: string = 'send <path> <recipient> <amount>';
-export const desc: string = 'Use mnemonic at <path> to send <amount> satoshis, to <recipient>';
+export const command = 'send <path> <recipient> <amount>';
+export const desc = 'Use mnemonic at <path> to send <amount> satoshis, to <recipient>';
 
 export const builder: CommandBuilder<Options, Options> = (yargs) =>
     yargs
@@ -31,6 +31,8 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
     const seed = seedFromMnemonic(seedStr, DEFAULT_NETWORK);
 
     const wallet_root_key = seed.derivePath(ROOT_WALLET_PATH);
+    const wd = new WdApi(config.wallet_daemon());
+    const praline = new PralineApi(config.praline())
 
     await wd.init_account(DEFAULT_WALLET_NAME, wallet_root_key);
     await wd.synchronize_account(DEFAULT_WALLET_NAME);
@@ -44,7 +46,7 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
 
     // Build and send
     const tx = await wd.build_transaction(DEFAULT_WALLET_NAME, amount, recipient);
-    const signedTx = await signWDTxWithSeed(DEFAULT_WALLET_NAME, tx, wallet_root_key);
+    const signedTx = await signWDTxWithSeed(DEFAULT_WALLET_NAME, tx, wallet_root_key, config.praline());
     const txHash = await wd.broadcast_transaction(
         DEFAULT_WALLET_NAME,
         signedTx.raw_transaction,

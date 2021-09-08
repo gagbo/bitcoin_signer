@@ -2,8 +2,9 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import * as dotenv from 'dotenv';
 
-require('dotenv').config();
+dotenv.config();
 
 yargs(hideBin(process.argv))
   // Use the commands directory to scaffold.

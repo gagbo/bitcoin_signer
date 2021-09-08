@@ -10,8 +10,8 @@ type Options = {
   tx: string;
 };
 
-export const command: string = 'sign <path> <tx>';
-export const desc: string = 'Use mnemonic at <path> to sign a transaction <tx>';
+export const command = 'sign <path> <tx>';
+export const desc = 'Use mnemonic at <path> to sign a transaction <tx>';
 
 export const builder: CommandBuilder<Options, Options> = (yargs) =>
   yargs
@@ -39,7 +39,7 @@ export const handler = (argv: Arguments<Options>): void => {
      "m/49'/1'/1'/1/2",
      "m/49'/1'/2'/0/0"],
     network);
-  const signedTx = signTxWithKeyPairs(parsed, keyChain);
+  const signedTx = signTxWithKeyPairs(parsed, keyChain, network);
   console.log(signedTx.toHex());
 
   process.exit(0);

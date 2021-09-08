@@ -2,7 +2,7 @@ import type { Arguments, CommandBuilder } from 'yargs';
 import { seedFromMnemonic } from '../lib/seeds';
 import * as fs from 'fs';
 import * as bitcoin from 'bitcoinjs-lib';
-import * as praline from '../lib/praline-api';
+import { PralineApi } from '../lib/praline-api';
 import * as config from "../lib/config";
 
 const DEFAULT_NETWORK = config.network().network;
@@ -13,8 +13,8 @@ type Options = {
     amount: number;
 };
 
-export const command: string = 'faucet <path> <derivation> <amount>';
-export const desc: string = 'Use mnemonic at <path> to query for <amount> BTC, on <derivation>';
+export const command = 'faucet <path> <derivation> <amount>';
+export const desc = 'Use mnemonic at <path> to query for <amount> BTC, on <derivation>';
 
 export const builder: CommandBuilder<Options, Options> = (yargs) =>
     yargs
@@ -32,6 +32,8 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
 
     const seedStr = fs.readFileSync(path, 'utf8');
     const seed = seedFromMnemonic(seedStr, DEFAULT_NETWORK);
+
+    const praline = new PralineApi(config.praline());
 
     const keypair = bitcoin.ECPair.fromPrivateKey(
         seed.derivePath(derivation).privateKey,

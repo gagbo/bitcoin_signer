@@ -11,3 +11,13 @@ logs
 # Environment
 *.env*
 .mnemonic
+
+# Yarn without Zero-Installs
+# Ref https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
