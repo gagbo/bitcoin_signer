@@ -3,8 +3,9 @@ import { Transaction, ECPairInterface, Network } from 'bitcoinjs-lib';
 import * as bitcoin from 'bitcoinjs-lib';
 import { Transaction as WDTransaction} from './wd-api';
 import * as praline from './praline-api';
+import * as config from './config';
 
-const DEFAULT_NETWORK: Network = bitcoin.networks.testnet;
+const DEFAULT_NETWORK: Network = config.network().network;
 
 export function signTxWithKeyPairs(tx: Transaction, keyPairs: ECPairInterface[]): Transaction {
     const txb = bitcoin.TransactionBuilder.fromTransaction(tx, DEFAULT_NETWORK);

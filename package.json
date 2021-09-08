@@ -1,6 +1,6 @@
 {
   "name": "bitcoin_signer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "[Internal development use] INSECURE CLI BTC transaction signer for integration tests",
   "repository": "https://github.com/gagbo/bitcoin_signer",
   "main": "./dist/index.js",
@@ -8,8 +8,8 @@
     "build": "tsc --build"
   },
   "bin": "./dist/index.js",
-  "keywords": [],
-  "author": "",
+  "keywords": ["bitcoin", "test", "signing"],
+  "author": "Gerry Agbobada",
   "license": "MIT",
   "devDependencies": {
     "@types/cli-progress": "^3.9.2",
@@ -30,6 +30,7 @@
     "bip39": "^3.0.4",
     "bitcoinjs-lib": "^5.2.0",
     "cli-progress": "^3.9.0",
+    "dotenv": "^10.0.0",
     "yargs": "^17.1.1"
   }
 }

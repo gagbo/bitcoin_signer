@@ -2,13 +2,13 @@ import type { Arguments, CommandBuilder } from 'yargs';
 import { seedFromMnemonic } from '../lib/seeds';
 import { signWDTxWithSeed } from '../lib/sign';
 import * as fs from 'fs';
-import * as bitcoin from 'bitcoinjs-lib';
 import * as wd from '../lib/wd-api';
 import * as praline from '../lib/praline-api';
+import * as config from '../lib/config';
 
-const DEFAULT_NETWORK = bitcoin.networks.testnet;
-const ROOT_WALLET_PATH = "m/49'/1'/0'";
-const DEFAULT_WALLET_NAME = "help";
+const DEFAULT_NETWORK = config.network().network;
+const ROOT_WALLET_PATH = config.network().root_wallet_path;
+const DEFAULT_WALLET_NAME = config.wallet_daemon().wallet_name;
 
 type Options = {
     path: string;

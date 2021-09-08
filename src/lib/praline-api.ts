@@ -3,13 +3,14 @@ import * as AxiosLogger from 'axios-logger';
 import cliProgress from 'cli-progress';
 import { Transaction } from 'bitcoinjs-lib';
 import { Transaction as WDTransaction } from './wd-api';
+import * as config from './config';
 
 type Block = {
     height: number;
 };
 
-const PRALINE_URL = "http://localhost:28443";
-const EXPLORER_URL = "http://localhost:20000";
+const PRALINE_URL = config.praline_url();
+const EXPLORER_URL = config.explorer_url();
 
 const praline_client = axios.create();
 praline_client.interceptors.request.use(AxiosLogger.requestLogger, AxiosLogger.errorLogger);
@@ -28,7 +29,7 @@ async function post(base_url: string, path: string, body?: any): Promise<any> {
 
 async function get_current_block(): Promise<Block> {
     try {
-        return await get(EXPLORER_URL, "/blockchain/v3/btc_testnet/blocks/current");
+        return await get(EXPLORER_URL, `/blockchain/v3/${config.network().explorer_id}/blocks/current`);
     } catch (e) {
         if (e.response && e.response.status == 404) {
             return { height: 0 };
@@ -38,7 +39,7 @@ async function get_current_block(): Promise<Block> {
 
 export async function mine_blocks(n: number): Promise<Block> {
     const root_block = await get_current_block();
-    await post(PRALINE_URL, `/chain/mine/2N6HfrLYH2yxWPXpuXkX5auQRTntWyHoJiC/${n}`);
+    await post(PRALINE_URL, `/chain/mine/${config.network().chain_id}/${n}`);
     let current_block: Block = { height: 0 };
     const progress = new cliProgress.SingleBar({
         format: 'Mining {total} blocks [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'
