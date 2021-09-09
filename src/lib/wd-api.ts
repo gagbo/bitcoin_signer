@@ -15,6 +15,17 @@ export type Transaction = {
     raw_transaction: string
 }
 
+export type EthTransaction = {
+    hash: string,
+    receiver: string,
+    value: string,
+    gas_price: string,
+    gas_limit: string,
+    fees: string,
+    raw_transaction: string,
+    status: number
+}
+
 export type WDConfig = {
     url: string,
     pubkey: string,
@@ -105,6 +116,29 @@ export class WdApi {
         })
     }
 
+    async init_eth_account(wallet_name: string, root_key: BIP32Interface): Promise<any> {
+        // Create pool
+        await this.post('/pools', {
+            pool_name: 'local_pool'
+        })
+        // Create wallet
+        await this.post('/pools/local_pool/wallets', {
+            wallet_name: wallet_name,
+            currency_name: 'ethereum_ropsten',
+        })
+        // Create account
+        await this.post(`/pools/local_pool/wallets/${wallet_name}/accounts/extended`, {
+            "account_index": "0",
+            "derivations": [
+                {
+                    "path": "44'/60'/0'",
+                    "owner": "1",
+                    "extended_key": root_key.neutered().toBase58()
+                }
+            ]
+        })
+    }
+
     async get_operations(wallet_name: string, log?: boolean): Promise<any> {
         return (await this.get(`/pools/local_pool/wallets/${wallet_name}/accounts/0/operations?full_op=1`, !log)).operations
     }
@@ -135,6 +169,23 @@ export class WdApi {
             raw_transaction: raw_tx,
             signatures: signatures,
             pubkeys: pubkeys
+        })
+    }
+
+    async build_eth_transaction(wallet_name: string, amount: number, recipient: string): Promise<EthTransaction> {
+        // Prepare a transaction from wallet daemon
+        return await this.post(`/pools/local_pool/wallets/${wallet_name}/accounts/0/transactions`, {
+            recipient: recipient,
+            fees_level: 'NORMAL',
+            amount: amount.toString()
+        });
+    }
+
+    async broadcast_eth_transaction(wallet_name: string, raw_tx: string, signatures: string[]): Promise<string> {
+        // Broadcast with wallet daemon
+        return await this.post(`/pools/local_pool/wallets/${wallet_name}/accounts/0/transactions/sign`, {
+            raw_transaction: raw_tx,
+            signatures: signatures,
         })
     }
 }

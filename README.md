@@ -59,7 +59,9 @@ workflows.
 ``` bash
 docker-compose up -d
  # Wait for all containers to start, lasts approx. 1min. You can monitor your CPU load
-./tooling/scenario.sh
+./tooling/scenarii/btc_testnet_praline.sh
+ # Or the eth one
+./tooling/scenarii/eth_ropsten_real.sh
 ```
 
 ## Design decisions and limitations

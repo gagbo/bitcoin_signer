@@ -35,6 +35,7 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
+    "@ethereumjs/tx": "^3.3.0",
     "axios": "^0.21.3",
     "bip32": "^2.0.6",
     "bip39": "^3.0.4",
