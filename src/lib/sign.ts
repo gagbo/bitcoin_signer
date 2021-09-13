@@ -7,6 +7,9 @@ import { Transaction as EthTransaction } from '@ethereumjs/tx';
 import * as ethUtil from 'ethereumjs-util';
 import { Address } from 'ethereumjs-util';
 import Common, { Chain, Hardfork } from '@ethereumjs/common';
+import { Logger } from "tslog";
+
+const log: Logger = new Logger();
 
 const DEFAULT_NETWORK: Network = bitcoin.networks.testnet;
 
@@ -59,7 +62,7 @@ export async function signWDTxWithSeed(wallet_name: string, tx: WDTransaction, r
             const keypair = bitcoin.ECPair.fromPrivateKey(node.privateKey, { network: network || DEFAULT_NETWORK });
             private_keys.push(keypair.toWIF());
             const address = bitcoin.payments.p2pkh({ pubkey: keypair.publicKey, network: network || DEFAULT_NETWORK }).address;
-            console.log(`Input #${index} WIF ${keypair.toWIF()} (address: ${address}, path: ${components[components.length - 2]}/${components[components.length - 1]})`);
+            log.info(`Input #${index} WIF ${keypair.toWIF()} (address: ${address}, path: ${components[components.length - 2]}/${components[components.length - 1]})`);
             index += 1;
         }
     }
@@ -116,6 +119,7 @@ export function signWDEthTxWithSeed(tx: WDEthTransaction, account_key: BIP32Inte
     const chain = Chain.Ropsten;
     const hardfork = Hardfork.London;
 
+    // Parse the raw transaction received
     const fixedRawTx = fixWDEthTx(tx);
     // Will throw if the transaction built is not for Ropsten and London
     let parsedTx = EthTransaction.fromSerializedTx(Buffer.from(fixedRawTx.raw_transaction, 'hex'), {
@@ -127,18 +131,21 @@ export function signWDEthTxWithSeed(tx: WDEthTransaction, account_key: BIP32Inte
     if (nonce) {
         parsedTx = setEthTxNonce(parsedTx, nonce);
     }
+
+    // Generate the signature
     const privateKey = account_key.privateKey;
     const msgHash = parsedTx.getMessageToSign(true)
-    // v is computed by WD later
+    // ecSignature.v won't be used, as the WD sets it later
+    // (in co.ledger.wallet.daemon.models.Account.broadcastETHTransaction)
     const ecSignature = ethUtil.ecsign(msgHash, privateKey, chain)
 
     // Sanity checks and logging
     const signedTx = parsedTx.sign(privateKey);
-    console.log(`Signed the transaction from ${signedTx.getSenderAddress().toString()} ` +
+    log.info(`Signed the transaction from ${signedTx.getSenderAddress().toString()} ` +
         `to ${parsedTx.to.toString()}`);
     if (signedTx.getSenderAddress().toString() != Address.fromPrivateKey(privateKey).toString()) {
-        throw `The signed sender ${signedTx.getSenderAddress().toString()} doesn't match ` +
-        `the expected one ${Address.fromPrivateKey(privateKey).toString()}`
+        log.fatal(new Error(`The signed sender ${signedTx.getSenderAddress().toString()} doesn't match ` +
+            `the expected one ${Address.fromPrivateKey(privateKey).toString()}`));
     }
 
     // DER serialization of signature
@@ -151,11 +158,11 @@ export function signWDEthTxWithSeed(tx: WDEthTransaction, account_key: BIP32Inte
         ecSignature.s
     ]);
 
-    // console.log(`unsigned Transaction is ${JSON.stringify(parsedTx.toJSON())}`);
-    console.log(`Signed Transaction is ${JSON.stringify(signedTx.toJSON(), null, 2)}`);
-    // console.log(`v is ${ecSignature.v}`)
-    // console.log("JS-side signed rawTx (to compare with WD explorer call if doubt) " +
-    //     `is ${signedTx.serialize().toString('hex')}`);
+    log.debug(`unsigned Transaction is ${JSON.stringify(parsedTx.toJSON())}`);
+    log.info(`Signed Transaction is ${JSON.stringify(signedTx.toJSON(), null, 2)}`);
+    log.debug(`v is ${ecSignature.v}`);
+    log.debug("JS-side signed rawTx (to compare with WD explorer call if doubt) " +
+        `is ${signedTx.serialize().toString('hex')}`);
 
     return {
         raw_transaction: parsedTx.serialize().toString('hex'),

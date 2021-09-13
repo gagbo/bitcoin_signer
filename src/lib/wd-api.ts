@@ -1,6 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 import * as AxiosLogger from 'axios-logger';
 import { BIP32Interface } from 'bip32';
+import { Logger } from "tslog";
+
+const _log: Logger = new Logger({ overwriteConsole: true });
 
 // Disable explicit any warning for API calling code
 /* eslint-disable  @typescript-eslint/no-explicit-any */

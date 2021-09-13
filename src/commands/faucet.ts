@@ -4,6 +4,9 @@ import * as fs from 'fs';
 import * as bitcoin from 'bitcoinjs-lib';
 import { PralineApi } from '../lib/praline-api';
 import * as config from "../lib/config";
+import { Logger } from "tslog";
+
+const log: Logger = new Logger();
 
 const DEFAULT_NETWORK = config.network().network;
 
@@ -41,11 +44,11 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
     const address = bitcoin.payments.p2pkh(
         { pubkey: keypair.publicKey, network: DEFAULT_NETWORK }
     ).address;
-    console.log("Mining a few blocks on Praline to have some leeway");
-    console.log(await praline.mine_blocks(125));
+    log.info("Mining a few blocks on Praline to have some leeway");
+    log.info(await praline.mine_blocks(125));
     await praline.faucet_coins(amount, address);
-    console.log("Mining 125 blocks on Praline to be sure the coins are spendable");
-    console.log(await praline.mine_blocks(125));
+    log.info("Mining 125 blocks on Praline to be sure the coins are spendable");
+    log.info(await praline.mine_blocks(125));
 
     process.exit(0);
 };

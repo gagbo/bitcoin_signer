@@ -5,6 +5,9 @@ import * as fs from 'fs';
 import { WdApi } from '../lib/wd-api';
 import { PralineApi } from '../lib/praline-api';
 import * as config from '../lib/config';
+import { Logger } from "tslog";
+
+const log: Logger = new Logger();
 
 const DEFAULT_NETWORK = config.network().network;
 const ROOT_WALLET_PATH = config.network().root_wallet_path;
@@ -37,7 +40,7 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
     await wd.init_account(DEFAULT_WALLET_NAME, wallet_root_key);
     await wd.synchronize_account(DEFAULT_WALLET_NAME);
     await wd.wait_for_synchronization(DEFAULT_WALLET_NAME);
-    console.log(await wd.get_operations(DEFAULT_WALLET_NAME));
+    log.info("Initial operation list", await wd.get_operations(DEFAULT_WALLET_NAME));
     const balance = (await wd.get_account_info(DEFAULT_WALLET_NAME)).balance
 
     if (balance < (amount).toString()) {
@@ -54,27 +57,26 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
         signedTx.pubkeys);
 
     // Check optimistic update
-    console.log("Wait for 3 seconds for the update to hit database (contention on database ?)")
+    log.info("Wait for 3 seconds for the update to hit database (contention on database ?)")
     await new Promise((resolve) => {
         setTimeout(resolve, 3000);
     });
-    console.log("Displaying operations to confirm the optimistic update worked");
-    console.log(await wd.get_operations(DEFAULT_WALLET_NAME));
+    log.info("Operations after optimistic updates", await wd.get_operations(DEFAULT_WALLET_NAME));
     if (!(await wd.is_transaction_on_wallet_daemon(DEFAULT_WALLET_NAME, txHash))) {
         throw `Transaction ${txHash} does not appear on Wallet daemon just after broadcast`
     }
 
     // Check transactions after it's confirmed
-    console.log("Mining a few blocks on Praline to have some confirmations");
-    console.log(await praline.mine_blocks(20));
-    console.log("Displaying operations after synchronization to confirm the tx has been updated");
+    log.info("Mining a few blocks on Praline to have some confirmations");
+    log.info(await praline.mine_blocks(20));
+    log.info("Displaying operations after synchronization to confirm the tx has been updated");
     await wd.synchronize_account(DEFAULT_WALLET_NAME);
     await wd.wait_for_synchronization(DEFAULT_WALLET_NAME); // This seems to fail, so we are manually waiting as well
-    console.log("Wait for 3 seconds for the update to hit database (contention on database ?)")
+    log.info("Wait for 3 seconds for the update to hit database (contention on database ?)")
     await new Promise((resolve) => {
         setTimeout(resolve, 3000);
     });
-    console.log(await wd.get_operations(DEFAULT_WALLET_NAME));
+    log.info("Operations after synchronization", await wd.get_operations(DEFAULT_WALLET_NAME));
     if (!(await wd.is_transaction_on_wallet_daemon(DEFAULT_WALLET_NAME, txHash))) {
         throw `Transaction ${txHash} does not appear on Wallet daemon after synchronization`
     }

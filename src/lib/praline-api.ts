@@ -3,6 +3,9 @@ import * as AxiosLogger from 'axios-logger';
 import cliProgress from 'cli-progress';
 import { Transaction } from 'bitcoinjs-lib';
 import { Transaction as WDTransaction } from './wd-api';
+import { Logger } from "tslog";
+
+const log: Logger = new Logger({ overwriteConsole: true });
 
 // Disable explicit any warning for API calling code
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -73,7 +76,7 @@ export class PralineApi {
     }
 
     async faucet_coins(amount: number, address: string): Promise<any> {
-        console.log(`Faucet ${amount} BTC to ${address}`);
+        log.info(`Faucet ${amount} BTC to ${address}`);
         return await this.post(this.url, `/chain/faucet/${address}/${amount}`);
     }
 

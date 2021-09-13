@@ -4,6 +4,9 @@ import { signTxWithKeyPairs, generateKeychain } from '../lib/sign';
 import { Transaction } from 'bitcoinjs-lib';
 import * as fs from 'fs';
 import * as config from '../lib/config';
+import { Logger } from "tslog";
+
+const log: Logger = new Logger();
 
 type Options = {
   path: string;
@@ -20,13 +23,13 @@ export const builder: CommandBuilder<Options, Options> = (yargs) =>
 
 export const handler = (argv: Arguments<Options>): void => {
   const { path, tx } = argv;
-  process.stdout.write(`Args are\n\tPath: ${path}\n\tTx: ${tx}\n`);
+  log.silly(`Args are\n\tPath: ${path}\n\tTx: ${tx}\n`);
   const network = config.network().network;
   const seedStr = fs.readFileSync(path, 'utf8');
   const seed = seedFromMnemonic(seedStr, network);
   const txStr = fs.readFileSync(tx, 'utf8');
   const parsed = Transaction.fromHex(txStr);
-  process.stdout.write(`${parsed.toHex()}\n`);
+  log.silly(`${parsed.toHex()}\n`);
 
   const keyChain = generateKeychain(
     seed,
@@ -40,7 +43,7 @@ export const handler = (argv: Arguments<Options>): void => {
      "m/49'/1'/2'/0/0"],
     network);
   const signedTx = signTxWithKeyPairs(parsed, keyChain, network);
-  console.log(signedTx.toHex());
+  log.info(signedTx.toHex());
 
   process.exit(0);
 };

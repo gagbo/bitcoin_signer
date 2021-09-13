@@ -3,6 +3,9 @@ import { BIP32Interface } from 'bip32';
 import * as bip39 from 'bip39';
 import { Network } from 'bitcoinjs-lib';
 import * as bitcoin from 'bitcoinjs-lib';
+import { Logger } from "tslog";
+
+const log: Logger = new Logger();
 
 const DEFAULT_NETWORK: Network = bitcoin.networks.testnet;
 
@@ -19,7 +22,7 @@ export function seedFromHexStr(hexStr: string, network?: Network): BIP32Interfac
     const splitInput = hexStr.split(pattern);
 
     if (splitInput.length != 2) {
-        throw "hexStr doesn't have the correct format";
+        log.fatal(new Error("hexStr doesn't have the correct format"));
     }
 
     return bip32.fromPrivateKey(

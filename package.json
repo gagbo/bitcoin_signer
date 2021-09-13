@@ -42,6 +42,7 @@
     "bitcoinjs-lib": "^5.2.0",
     "cli-progress": "^3.9.0",
     "dotenv": "^10.0.0",
+    "tslog": "^3.2.2",
     "yargs": "^17.1.1"
   },
   "jest": {
