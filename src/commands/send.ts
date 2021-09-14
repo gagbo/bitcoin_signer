@@ -57,9 +57,9 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
         signedTx.pubkeys);
 
     // Check optimistic update
-    log.info("Wait for 3 seconds for the update to hit database (contention on database ?)")
+    log.info("Wait for 1 seconds for the operation query to find the last op (the request is too strict)")
     await new Promise((resolve) => {
-        setTimeout(resolve, 3000);
+        setTimeout(resolve, 1000);
     });
     log.info("Operations after optimistic updates", await wd.get_operations(DEFAULT_WALLET_NAME));
     if (!(await wd.is_transaction_on_wallet_daemon(DEFAULT_WALLET_NAME, txHash))) {
@@ -72,9 +72,9 @@ export const handler = async (argv: Arguments<Options>): Promise<void> => {
     log.info("Displaying operations after synchronization to confirm the tx has been updated");
     await wd.synchronize_account(DEFAULT_WALLET_NAME);
     await wd.wait_for_synchronization(DEFAULT_WALLET_NAME); // This seems to fail, so we are manually waiting as well
-    log.info("Wait for 3 seconds for the update to hit database (contention on database ?)")
+    log.info("Wait for 1 seconds for the operation query to find the last op (the request is too strict)")
     await new Promise((resolve) => {
-        setTimeout(resolve, 3000);
+        setTimeout(resolve, 1000);
     });
     log.info("Operations after synchronization", await wd.get_operations(DEFAULT_WALLET_NAME));
     if (!(await wd.is_transaction_on_wallet_daemon(DEFAULT_WALLET_NAME, txHash))) {
