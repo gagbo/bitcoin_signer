@@ -1,6 +1,6 @@
 import type { Arguments, CommandBuilder } from 'yargs';
 import { seedFromMnemonic } from '../lib/seeds';
-import { signTxWithKeyPairs, generateKeychain } from '../lib/sign';
+import { signTxWithKeyPairs, generateKeychain, toWDBroadcastPayload } from '../lib/sign';
 import { Transaction } from 'bitcoinjs-lib';
 import * as fs from 'fs';
 import * as config from '../lib/config';
@@ -43,7 +43,8 @@ export const handler = (argv: Arguments<Options>): void => {
      "m/49'/1'/2'/0/0"],
     network);
   const signedTx = signTxWithKeyPairs(parsed, keyChain, network);
-  log.info(signedTx.toHex());
+  log.info("Signed the transaction", signedTx);
+  log.info("WD format", toWDBroadcastPayload(signedTx));
 
   process.exit(0);
 };

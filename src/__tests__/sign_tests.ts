@@ -1,4 +1,4 @@
-import { signTxWithKeyPairs, generateKeychain } from "../lib/sign";
+import { signTxWithKeyPairs, generateKeychain, toWDBroadcastPayload } from "../lib/sign";
 import { seedFromMnemonic } from "../lib/seeds";
 import { Transaction } from "bitcoinjs-lib";
 import * as bitcoin from "bitcoinjs-lib";
@@ -22,7 +22,7 @@ test("signTxWithKeyPairs signs testnet transaction from seed with derivation", (
     const keyChain = generateKeychain(seed, derivations, TEST_NETWORK);
 
     const signedTx = signTxWithKeyPairs(parsed, keyChain, TEST_NETWORK);
-    expect(signedTx.toHex().length - parsed.toHex().length).toBe(162);
+    expect(signedTx.signed_tx.toHex().length - parsed.toHex().length).toBe(162);
 });
 
 test("signTxWithKeyPairs signs testnet transaction from seed with derivation in list", () => {
@@ -34,7 +34,9 @@ test("signTxWithKeyPairs signs testnet transaction from seed with derivation in 
     const keyChain = generateKeychain(seed, derivations, TEST_NETWORK);
 
     const signedTx = signTxWithKeyPairs(parsed, keyChain, TEST_NETWORK);
-    expect(signedTx.toHex().length - parsed.toHex().length).toBe(162);
+    expect(signedTx.signed_tx.toHex().length - parsed.toHex().length).toBe(162);
+    expect(signedTx.pubkey_paths.length).toBe(1);
+    expect(signedTx.pubkey_paths[0]).toBe("m/49'/1'/0'/0/0");
 });
 
 test("signTxWithKeyPairs signs testnet transaction from seed with derivation not first in list", () => {
@@ -46,7 +48,9 @@ test("signTxWithKeyPairs signs testnet transaction from seed with derivation not
     const keyChain = generateKeychain(seed, derivations, TEST_NETWORK);
 
     const signedTx = signTxWithKeyPairs(parsed, keyChain, TEST_NETWORK);
-    expect(signedTx.toHex().length - parsed.toHex().length).toBe(162);
+    expect(signedTx.signed_tx.toHex().length - parsed.toHex().length).toBe(162);
+    expect(signedTx.pubkey_paths.length).toBe(1);
+    expect(signedTx.pubkey_paths[0]).toBe("m/49'/1'/0'/0/0");
 });
 
 test("signTxWithKeyPairs fails to sign testnet transaction from seed with wrong derivation", () => {
@@ -69,4 +73,22 @@ test("hardened (or not) derivation matters in keychain", () => {
     const keyChain = generateKeychain(seed, derivations, TEST_NETWORK);
 
     expect(() => signTxWithKeyPairs(parsed, keyChain, TEST_NETWORK)).toThrow();
+});
+
+test("toWDBroadcastPayload transforms a transaction correctly", () => {
+    const seed = seedFromMnemonic(TEST_SEED, TEST_NETWORK);
+
+    const parsed = Transaction.fromHex(TEST_TX);
+
+    const derivations = ["m/49'/1'/0'/0/0"];
+    const keyChain = generateKeychain(seed, derivations, TEST_NETWORK);
+
+    const signedTx = signTxWithKeyPairs(parsed, keyChain, TEST_NETWORK);
+    const actualPayload = toWDBroadcastPayload(signedTx);
+    const expectedPayload = {
+        raw_transaction: TEST_TX.toLowerCase(),
+        signatures: ["304402201fe1ee3f6bffdb01ff756beb42d1973c79bec5f42e35258b78d770751db7c15b02206f96be67d74e0d503afde5ecc56407b3b09bc4de7a03715bc2191cb29add4108"],
+        pubkeys: ["m/49'/1'/0'/0/0"]
+    }
+    expect(actualPayload).toEqual(expectedPayload);
 });

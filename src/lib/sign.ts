@@ -13,16 +13,29 @@ const log: Logger = new Logger();
 
 const DEFAULT_NETWORK: Network = bitcoin.networks.testnet;
 
-export function signTxWithKeyPairs(tx: Transaction, keyPairs: ECPairInterface[], network?: Network): Transaction {
+export type Keychain = {
+   keypair: ECPairInterface,
+   path: string
+}[]
+
+export type SignedTransaction = {
+    unsigned_raw: string,
+    signed_tx: Transaction;
+    pubkey_paths: string[];
+}
+
+export function signTxWithKeyPairs(tx: Transaction, keyChain: Keychain, network?: Network): SignedTransaction {
     const txb = bitcoin.TransactionBuilder.fromTransaction(tx, network || DEFAULT_NETWORK);
 
+    const pubkey_paths = [];
 
     // This assumes all inputs are spending utxos sent to the same Dogecoin P2PKH address (starts with D)
     for (let i = 0; i < tx.ins.length; i++) {
-        const keyChainSize = keyPairs.length;
+        const keyChainSize = keyChain.length;
         for (let j = 0; j < keyChainSize; j++) {
             try {
-                txb.sign(i, keyPairs[j]);
+                txb.sign(i, keyChain[j].keypair);
+                pubkey_paths.push(keyChain[j].path)
                 break;
             } catch (_e) {
                 if (j == keyChainSize - 1) {
@@ -35,15 +48,43 @@ export function signTxWithKeyPairs(tx: Transaction, keyPairs: ECPairInterface[],
         }
     }
 
-    const signedTx = txb.build();
-    return signedTx;
+    const signed_tx = txb.build();
+    return {
+        unsigned_raw: tx.toHex(),
+        signed_tx,
+        pubkey_paths
+    };
 }
 
-export function generateKeychain(seed: BIP32Interface, paths: string[], network?: Network): ECPairInterface[] {
+export function toWDBroadcastPayload(tx: SignedTransaction): {
+    raw_transaction: string,
+    signatures: string[],
+    pubkeys: string[]
+} {
+    const s_tx = tx.signed_tx;
+        const signatures = [];
+        const pubkeys = tx.pubkey_paths;
+        for (const input of s_tx.ins) {
+            const sig_size = input.script.readUInt8(0);
+            const der_sig = input.script.subarray(1, sig_size).toString('hex');
+            signatures.push(der_sig);
+        }
+
+    return {
+        raw_transaction: tx.unsigned_raw,
+        signatures,
+        pubkeys
+    }
+}
+
+export function generateKeychain(seed: BIP32Interface, paths: string[], network?: Network): Keychain {
     return paths.map(function(path, _index, _) {
-        return bitcoin.ECPair.fromPrivateKey(
+        return {
+            keypair: bitcoin.ECPair.fromPrivateKey(
             seed.derivePath(path).privateKey,
-            { 'network': network || DEFAULT_NETWORK });
+                { 'network': network || DEFAULT_NETWORK }),
+            path
+        };
     });
 }
 
@@ -69,11 +110,11 @@ export async function signWDTxWithSeed(wallet_name: string, tx: WDTransaction, r
 
     // Assuming that the Praline ID is the wallet name
     const praline = new PralineApi(praline_config);
-    const { signatures, pubkeys } = await praline.signWDTransaction(wallet_name, tx, private_keys);
+    const { signatures, pubkey_paths } = await praline.signWDTransaction(wallet_name, tx, private_keys);
 
     return {
         signatures: signatures,
-        pubkeys: pubkeys,
+        pubkeys: pubkey_paths,
         raw_transaction: tx.raw_transaction
     };
 }

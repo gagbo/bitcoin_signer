@@ -82,7 +82,7 @@ export class PralineApi {
 
     async signWDTransaction(praline_id: string, raw_tx: WDTransaction, private_keys: string[]): Promise<{
         signatures: string[],
-        pubkeys: string[]
+        pubkey_paths: string[]
     }> {
         // Sign the transaction with bitcoind RPC
         const signed_raw_tx = (await this.post(this.url, "/rpc", {
@@ -95,20 +95,20 @@ export class PralineApi {
         const signed_tx = Transaction.fromHex(signed_raw_tx);
         let index = 0;
         const signatures = [];
-        const pubkeys = [];
+        const pubkey_paths = [];
         for (const input of signed_tx.ins) {
             const sig_size = input.script.readUInt8(0);
             const der_sig = input.script.subarray(1, sig_size).toString('hex');
             signatures.push(der_sig);
             for (const path in raw_tx.inputs[index].derivation_paths) {
-                pubkeys.push(raw_tx.inputs[index].derivation_paths[path]);
+                pubkey_paths.push(raw_tx.inputs[index].derivation_paths[path]);
             }
             index += 1;
         }
 
         return {
-            signatures: signatures,
-            pubkeys: pubkeys
+            signatures,
+            pubkey_paths
         };
     }
 }
